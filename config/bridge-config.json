@@ -1,0 +1,35 @@
+{
+  "$schema": "./bridge-config-schema.json",
+  "bridges": [
+    {
+      "name": "CAN Bus 1",
+      "type": "ZhiMingCanBridge",
+      "transport": {
+        "type": "SerialPort",
+        "portName": "COM3",
+        "baudRate": 1500000,
+        "timeoutMs": 1000
+      },
+      "canBaudRate": {
+        "arbitrationBaudRate": 500,
+        "dataBaudRate": 2
+      },
+      "canFrameFormat": "Standard"
+    },
+    {
+      "name": "CAN Bus 2",
+      "type": "ZhiMingCanBridge",
+      "transport": {
+        "type": "SerialPort",
+        "portName": "COM5",
+        "baudRate": 115200,
+        "timeoutMs": 2000
+      },
+      "canBaudRate": {
+        "arbitrationBaudRate": 250,
+        "dataBaudRate": 2
+      },
+      "canFrameFormat": "Standard"
+    }
+  ]
+}

@@ -7,4 +7,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ATT.Core\ATT.Core.csproj" />
+    <ProjectReference Include="..\ATT.Protocol\ATT.Protocol.csproj" />
+  </ItemGroup>
+
 </Project>

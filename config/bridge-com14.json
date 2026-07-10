@@ -1,0 +1,20 @@
+{
+  "$schema": "./bridge-config-schema.json",
+  "bridges": [
+    {
+      "name": "CAN Bus COM14",
+      "type": "ZMCanBridge",
+      "transport": {
+        "type": "SerialPort",
+        "portName": "COM14",
+        "baudRate": 1500000,
+        "timeoutMs": 1000
+      },
+      "canBaudRate": {
+        "arbitrationBaudRate": 500,
+        "dataBaudRate": 2
+      },
+      "canFrameFormat": "Standard"
+    }
+  ]
+}

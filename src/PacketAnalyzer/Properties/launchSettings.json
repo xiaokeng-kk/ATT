@@ -1,8 +1,12 @@
 {
   "profiles": {
-    "package_file": {
+    "PacketAnalyzer": {
+      "commandName": "Project"
+    },
+    "config_file": {
       "commandName": "Project",
-      "commandLineArgs": "-f\r\ntest.json"
+      "commandLineArgs": "--config\r\nconfig/bridge-com14.json",
+      "workingDirectory": "D:\\myProject\\ATT"
     }
   }
 }

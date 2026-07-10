@@ -7,7 +7,7 @@ namespace ATT.Protocol.Bridges;
 /// 志明 CAN 桥接器 — 针对志明 CAN-UART 转换器硬件的具体实现
 /// 继承 CanBridge 虚类，复用协议帧打包/解析基础设施
 /// </summary>
-public class ZhiMingCanBridge : CanBridge
+public class ZMCanBridge : CanBridge
 {
     // ==================== 命令字 ====================
     private const byte CmdComCheck = 0x00;
@@ -20,7 +20,7 @@ public class ZhiMingCanBridge : CanBridge
     /// <summary>
     /// 创建志明 CAN 桥接器
     /// </summary>
-    public ZhiMingCanBridge(ITransport transport) : base(transport)
+    public ZMCanBridge(ITransport transport) : base(transport)
     {
         Name = "ZhiMing CAN Bridge";
     }

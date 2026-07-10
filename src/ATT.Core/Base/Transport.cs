@@ -6,7 +6,7 @@ namespace ATT.Core.Base;
 /// 传输层基类 — 实现 ITransport，提供连接状态管理和数据收发骨架
 /// 对应 scopehal 的 SCPITransport / SerialTransport
 /// </summary>
-public abstract class Transport : Component, ITransport
+public abstract class Transport : Component, ITransport, IDisposable
 {
     private bool _isConnected;
     private bool _isConnectedTemp;
@@ -47,5 +47,14 @@ public abstract class Transport : Component, ITransport
     protected void OnDataReceived(byte[] data)
     {
         DataReceived?.Invoke(data);
+    }
+
+    // ==================== IDisposable ====================
+
+    /// <summary>释放资源，默认调用 Close()</summary>
+    public virtual void Dispose()
+    {
+        Close();
+        GC.SuppressFinalize(this);
     }
 }
