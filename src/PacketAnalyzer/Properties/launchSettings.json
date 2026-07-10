@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "package_file": {
+      "commandName": "Project",
+      "commandLineArgs": "-f\r\ntest.json"
+    }
+  }
+}
