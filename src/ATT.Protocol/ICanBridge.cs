@@ -26,4 +26,19 @@ public interface ICanBridge
 
     /// <summary>接收到已解析的 CAN 数据帧</summary>
     event Action<CanFrame>? CanFrameReceived;
+
+    /// <summary>
+    /// 后台数据帧解析循环 — 子类实现从缓冲区读取并解析协议帧
+    /// </summary>
+    void DataProcessLoop();
+
+    /// <summary>
+    /// 启动后台数据帧解析线程
+    /// </summary>
+    void StartDataProcessThread();
+
+    /// <summary>
+    /// 停止后台数据帧解析线程
+    /// </summary>
+    void StopDataProcessThread();
 }

@@ -11,28 +11,31 @@ namespace ATT.Protocol.Bridges;
 public abstract class CanBridge : ICanBridge, IDisposable
 {
     // ==================== 协议常量 ====================
-    private const int RxBufferSize = 60000;
-    private const int MinFrameLength = 7;
-    private const byte FrameHeader1 = 0x55;
-    private const byte FrameHeader2 = 0xAA;
-    private const byte FrameTrailer = 0x5A;
+    protected const int RxBufferSize = 60000;
+    protected const int MinFrameLength = 7;
+    protected const byte FrameHeader1 = 0x55;
+    protected const byte FrameHeader2 = 0xAA;
+    protected const byte FrameTrailer = 0x5A;
 
     // ==================== 命令字 ====================
     private const byte CmdSendCanData = 0x10;
     private const byte CmdReceiveCanData = 0x11;
 
-    // ==================== 私有字段 ====================
+    // ==================== 字段 ====================
     private ITransport? _transport;
     private bool _disposed;
 
-    // 环形接收缓冲区
-    private readonly byte[] _rxBuf = new byte[RxBufferSize];
-    private int _pWrite;
-    private int _pRead;
+    /// <summary>环形接收缓冲区 — 子类 DataProcessLoop 从中读取数据</summary>
+    protected readonly byte[] _rxBuf = new byte[RxBufferSize];
+    /// <summary>环形缓冲区写入指针 — OnTransportDataReceived 写入</summary>
+    protected int _pWrite;
+    /// <summary>环形缓冲区读取指针 — DataProcessLoop 读取</summary>
+    protected int _pRead;
 
-    // 后台处理线程
-    private Thread? _dataProcessThread;
-    private CancellationTokenSource? _cts;
+    /// <summary>后台处理线程 — StartDataProcessThread 创建</summary>
+    protected Thread? _dataProcessThread;
+    /// <summary>后台线程取消令牌</summary>
+    protected CancellationTokenSource? _cts;
 
     // ==================== 构造 ====================
 
@@ -156,65 +159,26 @@ public abstract class CanBridge : ICanBridge, IDisposable
 
     // ==================== 后台帧解析 ====================
 
-    private void DataProcessLoop()
+    /// <summary>
+    /// 后台数据帧解析循环 — 默认实现为空循环（仅监听取消信号）
+    /// 子类可重写以添加自定义帧解析逻辑
+    /// </summary>
+    public virtual void DataProcessLoop()
     {
-        byte[] tmpBuf = new byte[255];
-
-        while (!_cts?.IsCancellationRequested ?? false)
+        try
         {
-            Thread.Sleep(5);
-
-            while (GetBufferValidLength() >= MinFrameLength)
+            while (!(_cts?.IsCancellationRequested ?? false))
             {
-                if (_rxBuf[_pRead] != FrameHeader1 ||
-                    _rxBuf[(_pRead + 1) % RxBufferSize] != FrameHeader2)
-                {
-                    _pRead = (_pRead + 1) % RxBufferSize;
-                    continue;
-                }
-
-                int frameLen = _rxBuf[(_pRead + 2) % RxBufferSize];
-
-                if (frameLen > GetBufferValidLength())
-                    break;
-
-                if (frameLen > tmpBuf.Length || frameLen < MinFrameLength)
-                {
-                    _pRead = (_pRead + 1) % RxBufferSize;
-                    continue;
-                }
-
-                for (int i = 0; i < frameLen; i++)
-                    tmpBuf[i] = _rxBuf[(_pRead + i) % RxBufferSize];
-
-                bool isValid = false;
-
-                if (tmpBuf[frameLen - 1] == FrameTrailer)
-                {
-                    if (tmpBuf[3] != 0)
-                        isValid = CalculateXor(tmpBuf, frameLen - 2) == tmpBuf[frameLen - 2];
-                    else
-                        isValid = true;
-
-                    if (isValid)
-                    {
-                        _pRead = (_pRead + frameLen) % RxBufferSize;
-                        ProcessParsedFrame(tmpBuf, frameLen);
-                    }
-                    else
-                    {
-                        _pRead = (_pRead + 1) % RxBufferSize;
-                    }
-                }
-                else
-                {
-                    _pRead = (_pRead + 1) % RxBufferSize;
-                }
+                Thread.Sleep(50);
             }
+        }
+        catch (ThreadInterruptedException)
+        {
+            // 线程被中断，正常退出
         }
     }
 
-    private void HandleReceivedCanFrame(byte[] frame)
+    protected virtual void HandleReceivedCanFrame(byte[] frame)
     {
         byte frameFormat = frame[8];
         bool isExtended = frameFormat != 0x00;
@@ -240,7 +204,8 @@ public abstract class CanBridge : ICanBridge, IDisposable
 
     // ==================== 辅助方法 ====================
 
-    private int GetBufferValidLength()
+    /// <summary>获取环形缓冲区有效数据长度 — 供子类 DataProcessLoop 使用</summary>
+    protected int GetBufferValidLength()
     {
         return (_pWrite + RxBufferSize - _pRead) % RxBufferSize;
     }
@@ -257,7 +222,10 @@ public abstract class CanBridge : ICanBridge, IDisposable
         return check;
     }
 
-    private void StartDataProcessThread()
+    /// <summary>
+    /// 启动后台数据帧解析线程
+    /// </summary>
+    public virtual void StartDataProcessThread()
     {
         _cts = new CancellationTokenSource();
         _dataProcessThread = new Thread(DataProcessLoop)
@@ -268,7 +236,10 @@ public abstract class CanBridge : ICanBridge, IDisposable
         _dataProcessThread.Start();
     }
 
-    private void StopDataProcessThread()
+    /// <summary>
+    /// 停止后台数据帧解析线程
+    /// </summary>
+    public virtual void StopDataProcessThread()
     {
         _cts?.Cancel();
         _cts = null;

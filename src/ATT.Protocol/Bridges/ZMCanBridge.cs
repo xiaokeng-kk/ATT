@@ -108,6 +108,70 @@ public class ZMCanBridge : CanBridge
         WriteCmd(CmdSetCanFrameFormat, [(byte)format]);
     }
 
+    // ==================== 后台帧解析重写 ====================
+
+    /// <summary>
+    /// 后台数据帧解析循环 — 从环形缓冲区读取原始数据，查找帧头帧尾，
+    /// 校验 XOR，解析出完整协议帧后交给 ProcessParsedFrame 处理
+    /// </summary>
+    public override void DataProcessLoop()
+    {
+        byte[] tmpBuf = new byte[255];
+
+        while (!(_cts?.IsCancellationRequested ?? false))
+        {
+            Thread.Sleep(5);
+
+            while (GetBufferValidLength() >= MinFrameLength)
+            {
+                if (_rxBuf[_pRead] != FrameHeader1 ||
+                    _rxBuf[(_pRead + 1) % RxBufferSize] != FrameHeader2)
+                {
+                    _pRead = (_pRead + 1) % RxBufferSize;
+                    continue;
+                }
+
+                int frameLen = _rxBuf[(_pRead + 2) % RxBufferSize];
+
+                if (frameLen > GetBufferValidLength())
+                    break;
+
+                if (frameLen > tmpBuf.Length || frameLen < MinFrameLength)
+                {
+                    _pRead = (_pRead + 1) % RxBufferSize;
+                    continue;
+                }
+
+                for (int i = 0; i < frameLen; i++)
+                    tmpBuf[i] = _rxBuf[(_pRead + i) % RxBufferSize];
+
+                bool isValid = false;
+
+                if (tmpBuf[frameLen - 1] == FrameTrailer)
+                {
+                    if (tmpBuf[3] != 0)
+                        isValid = CalculateXor(tmpBuf, frameLen - 2) == tmpBuf[frameLen - 2];
+                    else
+                        isValid = true;
+
+                    if (isValid)
+                    {
+                        _pRead = (_pRead + frameLen) % RxBufferSize;
+                        ProcessParsedFrame(tmpBuf, frameLen);
+                    }
+                    else
+                    {
+                        _pRead = (_pRead + 1) % RxBufferSize;
+                    }
+                }
+                else
+                {
+                    _pRead = (_pRead + 1) % RxBufferSize;
+                }
+            }
+        }
+    }
+
     // ==================== 底层命令封装 ====================
 
     private void ReadCmd(byte cmd)
