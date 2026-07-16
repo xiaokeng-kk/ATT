@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ATT.UI.Host.ViewModels"
+             xmlns:views="using:ATT.UI.Host.Views"
+             x:Class="ATT.UI.Host.Views.ComponentListView"
+             x:DataType="vm:ComponentManagerViewModel">
+
+  <DockPanel>
+    <!-- Top: category menu -->
+    <Menu DockPanel.Dock="Top" Margin="4,4,0,2">
+      <MenuItem Header="Component Type" ItemsSource="{Binding CategoryMenuItems}">
+        <MenuItem.ItemTemplate>
+          <DataTemplate x:DataType="vm:CategoryNode">
+            <MenuItem Header="{Binding Name}"
+                      Command="{Binding SelectCommand}"
+                      ItemsSource="{Binding Children}">
+              <MenuItem.ItemTemplate>
+                <DataTemplate x:DataType="vm:CategoryNode">
+                  <MenuItem Header="{Binding Name}"
+                            Command="{Binding SelectCommand}" />
+                </DataTemplate>
+              </MenuItem.ItemTemplate>
+            </MenuItem>
+          </DataTemplate>
+        </MenuItem.ItemTemplate>
+      </MenuItem>
+    </Menu>
+
+    <!-- Left sidebar: filtered component list -->
+    <ListBox DockPanel.Dock="Left"
+             ItemsSource="{Binding FilteredComponents}"
+             SelectedItem="{Binding SelectedComponent}"
+             Width="220"
+             BorderBrush="#44000000"
+             BorderThickness="0,0,1,0">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:ComponentViewModel">
+          <StackPanel Margin="8,4">
+            <TextBlock Text="{Binding ComponentName}" FontWeight="Bold" />
+            <TextBlock Text="{Binding ComponentType}" FontSize="11" Foreground="Gray" />
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <!-- Right: config panel for selected component -->
+    <ContentControl Content="{Binding SelectedComponent}">
+      <ContentControl.ContentTemplate>
+        <DataTemplate x:DataType="vm:ComponentViewModel">
+          <views:ComponentConfigView />
+        </DataTemplate>
+      </ContentControl.ContentTemplate>
+    </ContentControl>
+  </DockPanel>
+
+</UserControl>

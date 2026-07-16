@@ -248,7 +248,7 @@ public class TestPlan
 | 3 | `TestStep` 添加 `Session` 属性 + 辅助方法 | `src/ATT.Core/Base/TestStep.cs` |
 | 4 | 新增 `TestPlan` 容器类 | `src/ATT.Core/TestPlan.cs` |
 | 5 | 新增 `Engine` 类 + TCP 命令通道 | `src/ATT.Core/Engine.cs` |
-| 6 | CLI 支持发送命令（`--pause` / `--abort`） | `src/PacketAnalyzer/Program.cs` |
+| 6 | CLI 支持发送命令（`--pause` / `--abort`） | `ATT.Cli/Program.cs` |
 | 7 | 集成测试 | `tests/` |
 
 ---

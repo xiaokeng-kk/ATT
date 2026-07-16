@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "command": {
+      "commandName": "Project",
+      "commandLineArgs": "--config\r\nconfig/bridge-com14.json",
+      "workingDirectory": "D:\\myProject\\ATT"
+    }
+  }
+}

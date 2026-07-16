@@ -9,10 +9,10 @@ dotnet build PacketAnalyzer.sln
 # Build single project
 dotnet build src/ATT.Core/ATT.Core.csproj
 
-# Run the PacketAnalyzer CLI tool
-dotnet run --project src/PacketAnalyzer/PacketAnalyzer.csproj -- --help
-dotnet run --project src/PacketAnalyzer/PacketAnalyzer.csproj -- --data "1.5 2.3 4.1"
-dotnet run --project src/PacketAnalyzer/PacketAnalyzer.csproj -- --file data.csv --csv
+# Run the ATT.Cli tool
+dotnet run --project ATT.Cli/ATT.Cli.csproj -- --help
+dotnet run --project ATT.Cli/ATT.Cli.csproj -- --data "1.5 2.3 4.1"
+dotnet run --project ATT.Cli/ATT.Cli.csproj -- --file data.csv --csv
 ```
 
 ## Architecture
@@ -20,7 +20,7 @@ dotnet run --project src/PacketAnalyzer/PacketAnalyzer.csproj -- --file data.csv
 Three-layer design inspired by OpenTAP:
 
 ```
-PacketAnalyzer/          CLI tool (standalone, no ATT.Core dependency)
+ATT.Cli/                CLI tool (standalone, no ATT.Core dependency)
 ATT.Protocol/            Domain-specific CAN-UART protocol (references ATT.Core)
 ATT.Core/                Core framework — interfaces, base classes, catalog
 ```
@@ -91,7 +91,7 @@ public abstract class Instrument : IInstrument
 - **DisplayAttribute**: `[Display("Name", "Description", "Group1", "Group2")]` with optional `Order = n`. Used on classes, properties, and interfaces for UI metadata.
 - **UnitAttribute**: `[Unit("V", PreScaling = 1000)]` for physical quantity annotations on properties.
 - **All projects use .NET 9**, `<ImplicitUsings>enable</ImplicitUsings>`, `<Nullable>enable</Nullable>`.
-- **Dependency chain**: `ATT.Protocol → ATT.Core`. `PacketAnalyzer` is standalone (no Core ref). Skill projects reference `ATT.Core` at minimum.
+- **Dependency chain**: `ATT.Protocol → ATT.Core`. `ATT.Cli` is standalone (no Core ref). Skill projects reference `ATT.Core` at minimum.
 
 ## CAN-UART Protocol (ATT.Protocol)
 
@@ -109,7 +109,7 @@ public abstract class Instrument : IInstrument
 
 **Models**: `CanFrame` (Id, FrameFormat, Data), `CanFrameFormat` (Standard/Extended), `CanBaudRateConfig` (ArbitrationBaudRate, DataBaudRate), `UartConfig` (PortName, BaudRate, TimeoutMs)
 
-## PacketAnalyzer CLI
+## ATT.Cli CLI
 
 - Entry point: `Program.cs` with top-level statements, `ParseArgs()` static local function
 - Args: `--file/-f <path>`, `--data/-d <values>`, `--csv/-c`, `--help/-h`
