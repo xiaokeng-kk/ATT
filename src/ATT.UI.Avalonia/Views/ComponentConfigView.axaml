@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ATT.UI.Avalonia.ViewModels"
+             x:Class="ATT.UI.Avalonia.Views.ComponentConfigView"
+             x:DataType="vm:ComponentViewModel">
+
+  <ScrollViewer Padding="12">
+    <ItemsControl ItemsSource="{Binding Parameters}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:ParameterViewModel">
+          <!-- A separator-style border around each parameter -->
+          <Border Margin="0,4" Padding="8,6"
+                  BorderBrush="#33000000"
+                  BorderThickness="0,0,0,1">
+            <StackPanel Spacing="4">
+
+              <!-- ===== Action type: Button ===== -->
+              <Button Content="{Binding Name}"
+                      Command="{Binding InvokeCommand}"
+                      IsVisible="{Binding IsAction}"
+                      ToolTip.Tip="{Binding Description}" />
+
+              <!-- ===== Value type: Label + Input + Set button ===== -->
+              <StackPanel IsVisible="{Binding IsValueType}" Spacing="6">
+                <TextBlock Text="{Binding Name}"
+                           FontWeight="Bold"
+                           ToolTip.Tip="{Binding Description}" />
+
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBox MinWidth="120"
+                           Text="{Binding CurrentValueString, Mode=TwoWay}"
+                           Watermark="Enter value..." />
+                  <Button Content="Set"
+                          Command="{Binding SetCommand}" />
+                </StackPanel>
+
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="11"
+                           Foreground="Gray" />
+              </StackPanel>
+
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </ScrollViewer>
+
+</UserControl>
