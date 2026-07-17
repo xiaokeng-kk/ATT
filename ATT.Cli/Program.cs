@@ -11,25 +11,25 @@ internal static class Program
     {
         var (filePath, dataText, csvOutput, configFile) = ParseArgs(args);
 
-        // 如果有 --config，启动桥接器
+        // 如果有 --config，解析配置文件并自动打开对应设备
         if (!string.IsNullOrEmpty(configFile))
         {
-            return RunBridgeMode(configFile);
+            return RunDeviceMode(configFile);
         }
 
         return RunAnalyzerMode(filePath, dataText, csvOutput);
     }
 
-    // ===== 桥接器模式 =====
+    // ===== 设备模式 — 根据配置文件自动解析并打开设备 =====
 
-    private static int RunBridgeMode(string configFile)
+    private static int RunDeviceMode(string configFile)
     {
         try
         {
-            using var bridgeService = new BridgeService();
-            var bridges = bridgeService.StartFromConfig(configFile);
+            using var deviceService = new DeviceService();
+            var devices = deviceService.StartFromConfig(configFile);
 
-            Console.WriteLine($"成功启动 {bridges.Count} 个桥接器，按 Enter 退出...");
+            Console.WriteLine($"成功启动 {devices.Count} 个设备，按 Enter 退出...");
             Console.ReadLine();
 
             return 0;
@@ -144,7 +144,7 @@ internal static class Program
               ATT.Cli                      从标准输入读取（支持管道）
               ATT.Cli --csv                输出为 CSV 格式
 
-              ATT.Cli --config <文件路径>  启动桥接器（JSON 配置文件）
+              ATT.Cli --config <文件路径>  加载设备配置（JSON），自动解析桥接器/传感器
 
             数据格式:
               CSV / 空格 / Tab / 分号分隔的数值

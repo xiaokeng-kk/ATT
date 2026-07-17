@@ -1,25 +1,29 @@
 {
-  "$schema": "./bridge-config-schema.json",
-  "bridges": [
-    {
-      "name": "CAN Bus COM14",
-      "type": "ZMCanBridge",
-      "transport": {
-        "type": "SerialPort",
-        "portName": "COM14",
-        "baudRate": 1500000,
-        "timeoutMs": 1000
-      },
-      "canBaudRate": {
-        "arbitrationBaudRate": 500,
-        "dataBaudRate": 2
-      },
-      "canFrameFormat": "Standard"
-    }
-  ],
-  "sensor": [
-    {
-
-    }
-  ]
+    "sensor": [
+        {
+            "name": "500A",
+            "type": "CurrentSensor500A",
+            "transport": {
+                "type": "SerialPort",
+                "portName": "COM25",
+                "baudRate": 9375000
+            }
+        }
+    ],
+    "bridge": [
+        {
+            "name": "CAN Bus COM14",
+            "type": "ZMCanBridge",
+            "transport": {
+                "type": "SerialPort",
+                "portName": "COM14",
+                "baudRate": 1500000
+            },
+            "canBaudRate": {
+                "arbitrationBaudRate": 500,
+                "dataBaudRate": 2
+            },
+            "canFrameFormat": "Standard"
+        }
+    ]
 }
