@@ -1,8 +1,115 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ATT.UI.Host.ViewModels"
+             xmlns:views="using:ATT.UI.Host.Views"
              x:Class="ATT.UI.Host.App"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!-- ===== UiElementTemplateSelector ===== -->
+            <views:UiElementTemplateSelector x:Key="UiElementTemplateSelector">
+                <views:UiElementTemplateSelector.ButtonTemplate>
+                    <DataTemplate x:DataType="vm:UiElementViewModel">
+                        <StackPanel Margin="0,2">
+                            <Button Content="{Binding Label}"
+                                    Command="{Binding ActionCommand}"
+                                    ToolTip.Tip="{Binding Description}"
+                                    HorizontalAlignment="Stretch" />
+                            <TextBlock Text="{Binding StatusMessage}"
+                                       FontSize="11"
+                                       Foreground="Gray" />
+                        </StackPanel>
+                    </DataTemplate>
+                </views:UiElementTemplateSelector.ButtonTemplate>
+
+                <views:UiElementTemplateSelector.InputButtonTemplate>
+                    <DataTemplate x:DataType="vm:UiElementViewModel">
+                        <StackPanel Margin="0,2">
+                            <DockPanel>
+                                <Button Content="{Binding Label}"
+                                        Command="{Binding SendCommand}"
+                                        DockPanel.Dock="Right"
+                                        Margin="4,0,0,0" />
+                                <TextBox Text="{Binding InputText, Mode=TwoWay}"
+                                         Watermark="{Binding Description}" />
+                            </DockPanel>
+                            <TextBlock Text="{Binding StatusMessage}"
+                                       FontSize="11"
+                                       Foreground="Gray" />
+                        </StackPanel>
+                    </DataTemplate>
+                </views:UiElementTemplateSelector.InputButtonTemplate>
+
+                <views:UiElementTemplateSelector.ToggleTemplate>
+                    <DataTemplate x:DataType="vm:UiElementViewModel">
+                        <StackPanel Margin="0,2">
+                            <ToggleSwitch OffContent="{Binding Label}"
+                                          OnContent="{Binding Label}"
+                                          IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                          Command="{Binding ToggleCommand}" />
+                            <TextBlock Text="{Binding StatusMessage}"
+                                       FontSize="11"
+                                       Foreground="Gray" />
+                        </StackPanel>
+                    </DataTemplate>
+                </views:UiElementTemplateSelector.ToggleTemplate>
+
+                <views:UiElementTemplateSelector.DisplayTemplate>
+                    <DataTemplate x:DataType="vm:UiElementViewModel">
+                        <Border BorderBrush="#22000000"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="8,6"
+                                Margin="0,2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding Label}"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Value}"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Unit}"
+                                           Foreground="Gray"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </views:UiElementTemplateSelector.DisplayTemplate>
+
+                <views:UiElementTemplateSelector.ChartTemplate>
+                    <DataTemplate x:DataType="vm:UiElementViewModel">
+                        <Border BorderBrush="#22000000"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Height="200"
+                                Margin="0,2">
+                            <TextBlock Text="{Binding Label}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="Gray"
+                                       FontStyle="Italic" />
+                        </Border>
+                    </DataTemplate>
+                </views:UiElementTemplateSelector.ChartTemplate>
+
+                <views:UiElementTemplateSelector.GroupTemplate>
+                    <DataTemplate x:DataType="vm:UiElementViewModel">
+                        <Expander Header="{Binding Label}"
+                                  IsExpanded="True"
+                                  Margin="0,4">
+                            <ItemsControl ItemsSource="{Binding Children}"
+                                              ItemTemplate="{StaticResource UiElementTemplateSelector}" />
+                        </Expander>
+                    </DataTemplate>
+                </views:UiElementTemplateSelector.GroupTemplate>
+            </views:UiElementTemplateSelector>
+
+        </ResourceDictionary>
+    </Application.Resources>
 
     <Application.Styles>
         <FluentTheme />

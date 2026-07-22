@@ -1,4 +1,7 @@
+using System.Reflection;
+using System.Text.Json;
 using ATT.Core.Interfaces;
+using ATT.Core.Models;
 
 namespace ATT.Core.Base;
 
@@ -7,7 +10,7 @@ namespace ATT.Core.Base;
 /// 提供：环形接收缓冲区、后台数据解析线程、传输层事件订阅
 /// 子类需重写 DataProcessLoop 实现具体的协议解析和测量值提取
 /// </summary>
-public abstract class Sensor : Instrument, ISensor, IDisposable
+public abstract class Sensor : Instrument, ISensor, IDisplayable, IDisposable
 {
     // ==================== 常量 ====================
     private const int RxBufferSize = 4096;
@@ -160,6 +163,58 @@ public abstract class Sensor : Instrument, ISensor, IDisposable
     protected int GetBufferValidLength()
     {
         return (_pWrite + RxBufferSize - _pRead) % RxBufferSize;
+    }
+
+    // ==================== IDisplayable ====================
+
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true,
+    };
+
+    /// <summary>
+    /// 返回 JSON 格式的 UI 控件描述。
+    /// 默认从嵌入式资源 "{FullTypeName}.ui.json" 读取。
+    /// 子类可重写以运行时动态生成 JSON。
+    /// </summary>
+    public virtual string GetDisplayJson()
+    {
+        var type = GetType();
+        var resourceName = $"{type.FullName}.ui.json";
+        var assembly = type.GetTypeInfo().Assembly;
+
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream == null)
+            return """{"elements":[]}""";
+
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    /// <summary>
+    /// 返回解析后的 UI 元素列表。
+    /// 默认实现反序列化 GetDisplayJson() 中的 "elements" 数组。
+    /// 子类可重写以编程方式构建列表。
+    /// </summary>
+    public virtual IReadOnlyList<UiElement> GetDisplayElements()
+    {
+        var json = GetDisplayJson();
+        try
+        {
+            var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("elements", out var elementsProp))
+            {
+                var elements = JsonSerializer.Deserialize<List<UiElement>>(
+                    elementsProp.GetRawText(), _jsonOptions);
+                return elements ?? [];
+            }
+            return [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
     }
 
     // ==================== IDisposable ====================

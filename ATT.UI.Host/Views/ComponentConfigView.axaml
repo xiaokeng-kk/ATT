@@ -5,59 +5,78 @@
              x:DataType="vm:ComponentViewModel">
 
   <ScrollViewer Padding="12">
-    <ItemsControl ItemsSource="{Binding Parameters}">
-      <ItemsControl.ItemTemplate>
-        <DataTemplate x:DataType="vm:ParameterViewModel">
-          <Border Margin="0,4" Padding="8,6"
-                  BorderBrush="#33000000"
-                  BorderThickness="0,0,0,1">
-            <StackPanel Spacing="4">
+    <StackPanel>
+      <!-- ===== IConfigurable Parameters Section ===== -->
+      <ItemsControl ItemsSource="{Binding Parameters}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ParameterViewModel">
+            <Border Margin="0,4" Padding="8,6"
+                    BorderBrush="#33000000"
+                    BorderThickness="0,0,0,1">
+              <StackPanel Spacing="4">
 
-              <TextBlock Text="{Binding Name}"
-                         FontWeight="Bold"
-                         ToolTip.Tip="{Binding Description}" />
+                <TextBlock Text="{Binding Name}"
+                           FontWeight="Bold"
+                           ToolTip.Tip="{Binding Description}" />
 
-              <!-- ===== Action type: Button ===== -->
-              <Button Content="{Binding Name}"
-                      Command="{Binding InvokeCommand}"
-                      IsVisible="{Binding IsAction}"
-                      ToolTip.Tip="{Binding Description}" />
-
-              <!-- ===== Boolean: CheckBox ===== -->
-              <CheckBox IsVisible="{Binding IsBoolean}"
-                        IsChecked="{Binding CurrentValueBool, Mode=TwoWay}"
-                        Content="{Binding Name}"
-                        Command="{Binding SetCommand}"
+                <!-- ===== Action type: Button ===== -->
+                <Button Content="{Binding Name}"
+                        Command="{Binding InvokeCommand}"
+                        IsVisible="{Binding IsAction}"
                         ToolTip.Tip="{Binding Description}" />
 
-              <!-- ===== Integer / Double: NumericUpDown + Set ===== -->
-              <StackPanel IsVisible="{Binding IsNumeric}" Orientation="Horizontal" Spacing="6">
-                <NumericUpDown Minimum="{Binding MinValue}"
-                               Maximum="{Binding MaxValue}"
-                               Value="{Binding CurrentValueNumeric}"
-                               Width="140" />
-                <Button Content="Set"
-                        Command="{Binding SetCommand}" />
+                <!-- ===== Boolean: CheckBox ===== -->
+                <CheckBox IsVisible="{Binding IsBoolean}"
+                          IsChecked="{Binding CurrentValueBool, Mode=TwoWay}"
+                          Content="{Binding Name}"
+                          Command="{Binding SetCommand}"
+                          ToolTip.Tip="{Binding Description}" />
+
+                <!-- ===== Integer / Double: NumericUpDown + Set ===== -->
+                <StackPanel IsVisible="{Binding IsNumeric}" Orientation="Horizontal" Spacing="6">
+                  <NumericUpDown Minimum="{Binding MinValue}"
+                                 Maximum="{Binding MaxValue}"
+                                 Value="{Binding CurrentValueNumeric}"
+                                 Width="140" />
+                  <Button Content="Set"
+                          Command="{Binding SetCommand}" />
+                </StackPanel>
+
+                <!-- ===== String / default value type: TextBox + Set ===== -->
+                <StackPanel IsVisible="{Binding IsTextInput}" Orientation="Horizontal" Spacing="6">
+                  <TextBox MinWidth="140"
+                           Text="{Binding CurrentValueString, Mode=TwoWay}"
+                           Watermark="Enter value..." />
+                  <Button Content="Set"
+                          Command="{Binding SetCommand}" />
+                </StackPanel>
+
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="11"
+                           Foreground="Gray" />
+
               </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
 
-              <!-- ===== String / default value type: TextBox + Set ===== -->
-              <StackPanel IsVisible="{Binding IsTextInput}" Orientation="Horizontal" Spacing="6">
-                <TextBox MinWidth="140"
-                         Text="{Binding CurrentValueString, Mode=TwoWay}"
-                         Watermark="Enter value..." />
-                <Button Content="Set"
-                        Command="{Binding SetCommand}" />
-              </StackPanel>
+      <!-- ===== IDisplayable UI Elements Section ===== -->
+      <Border Margin="0,12,0,0" Padding="12,8"
+              Background="#11000000"
+              CornerRadius="6"
+              IsVisible="{Binding HasDisplayElements}">
+        <StackPanel Spacing="8">
+          <TextBlock Text="UI Controls"
+                     FontSize="14"
+                     FontWeight="Bold"
+                     Foreground="{DynamicResource SystemAccentColor}" />
 
-              <TextBlock Text="{Binding StatusMessage}"
-                         FontSize="11"
-                         Foreground="Gray" />
-
-            </StackPanel>
-          </Border>
-        </DataTemplate>
-      </ItemsControl.ItemTemplate>
-    </ItemsControl>
+          <ItemsControl ItemsSource="{Binding DisplayElements}"
+                        ItemTemplate="{StaticResource UiElementTemplateSelector}" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
   </ScrollViewer>
 
 </UserControl>

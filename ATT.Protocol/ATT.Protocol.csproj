@@ -14,4 +14,8 @@
     <ProjectReference Include="..\ATT.Core\ATT.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Sensors\CurrentSensor500A.ui.json" />
+  </ItemGroup>
+
 </Project>

@@ -12,7 +12,7 @@ namespace ATT.Protocol.Sensors;
 /// </summary>
 [Display("500A Current Sensor", "500A range current sensor for arc fault detection",
          "Sensors", "Current")]
-public class CurrentSensor500A : Sensor, IConfigurable
+public class CurrentSensor500A : Sensor, IConfigurable, IDisplayable
 {
     // ==================== 协议常量 ====================
     private const byte FrameHeader = 0xED;
