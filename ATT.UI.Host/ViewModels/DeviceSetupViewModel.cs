@@ -51,6 +51,7 @@ public partial class DeviceSetupViewModel : ObservableObject
 
     partial void OnSelectedItemChanged(DeviceSetupItemViewModel? value)
     {
+        OnPropertyChanged(nameof(HasSelectedItem));
         RefreshJsonPreview();
     }
 
@@ -77,6 +78,7 @@ public partial class DeviceSetupViewModel : ObservableObject
         if (SelectedItem == item)
             SelectedItem = DeviceItems.FirstOrDefault();
         OnPropertyChanged(nameof(HasDevices));
+        OnPropertyChanged(nameof(HasSelectedItem));
         RefreshJsonPreview();
     }
 

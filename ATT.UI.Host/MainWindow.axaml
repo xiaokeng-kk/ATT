@@ -10,11 +10,14 @@
         Title="{Binding Title}">
 
   <Grid>
-    <!-- Mode 1: Device Setup -->
+    <!--
+      Mode-based view switching.
+      Only ONE view is visible at a time — the other is collapsed (no layout space).
+      IsVisible = false in Avalonia means Visibility.Collapsed.
+    -->
     <views:DeviceSetupView IsVisible="{Binding IsSetupMode}"
                            DataContext="{Binding DeviceSetup}" />
 
-    <!-- Mode 2: Runtime Monitoring -->
     <views:RuntimeView IsVisible="{Binding IsRuntimeMode}"
                         DataContext="{Binding Runtime}" />
   </Grid>
