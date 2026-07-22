@@ -20,20 +20,20 @@ public class CurrentSensor500A : Sensor, IConfigurable
     private const int MinFrameLength = 4;
 
     // ==================== 命令字 ====================
-    private const byte CmdGetFirmwareInfo    = 0x01;
-    private const byte CmdGetChannelInfo     = 0x02;
-    private const byte CmdSetProcessMode     = 0x03;
-    private const byte CmdStartAcquisition   = 0x08;
-    private const byte CmdStopAcquisition    = 0x09;
-    private const byte CmdWriteConfig        = 0x0D;
-    private const byte CmdReadConfig         = 0x0E;
-    private const byte CmdDataUpload         = 0x11;
-    private const byte CmdAiArcReport        = 0x13;
+    private const byte CmdGetFirmwareInfo = 0x01;
+    private const byte CmdGetChannelInfo = 0x02;
+    private const byte CmdSetProcessMode = 0x03;
+    private const byte CmdStartAcquisition = 0x08;
+    private const byte CmdStopAcquisition = 0x09;
+    private const byte CmdWriteConfig = 0x0D;
+    private const byte CmdReadConfig = 0x0E;
+    private const byte CmdDataUpload = 0x11;
+    private const byte CmdAiArcReport = 0x13;
 
     // ==================== 配置项 ====================
     private const byte ConfigItemSamplePoints = 0x00;
-    private const byte ConfigItemSampleRate   = 0x01;
-    private const byte ConfigItemSampleMode   = 0x02;
+    private const byte ConfigItemSampleRate = 0x01;
+    private const byte ConfigItemSampleMode = 0x02;
 
     // ==================== 属性 ====================
 
@@ -93,11 +93,11 @@ public class CurrentSensor500A : Sensor, IConfigurable
     {
         switch (name)
         {
-            case "AI Mode":          SetProcessMode(value is true, Channel); break;
-            case "Channel":          _channel = Convert.ToByte(value ?? 0); SetProcessMode(_aiMode, _channel); break;
-            case "Sample Points":    SetSamplePoints(Convert.ToUInt32(value ?? 1024)); break;
-            case "Sample Rate":      SetSampleRate(Convert.ToUInt32(value ?? 1000)); break;
-            case "Sample Mode":      SetSampleMode(value is true); break;
+            case "AI Mode": SetProcessMode(value is true, Channel); break;
+            case "Channel": _channel = Convert.ToByte(value ?? 0); SetProcessMode(_aiMode, _channel); break;
+            case "Sample Points": SetSamplePoints(Convert.ToUInt32(value ?? 1024)); break;
+            case "Sample Rate": SetSampleRate(Convert.ToUInt32(value ?? 1000)); break;
+            case "Sample Mode": SetSampleMode(value is true); break;
         }
     }
 
@@ -105,12 +105,12 @@ public class CurrentSensor500A : Sensor, IConfigurable
     {
         return name switch
         {
-            "AI Mode"       => _aiMode,
-            "Channel"       => Channel,
+            "AI Mode" => _aiMode,
+            "Channel" => Channel,
             "Sample Points" => (object)_samplePoints,
-            "Sample Rate"   => (object)_sampleRate,
-            "Sample Mode"   => _sampleWithArcTag,
-            _               => null,
+            "Sample Rate" => (object)_sampleRate,
+            "Sample Mode" => _sampleWithArcTag,
+            _ => null,
         };
     }
 
@@ -118,11 +118,11 @@ public class CurrentSensor500A : Sensor, IConfigurable
     {
         switch (name)
         {
-            case "Get Firmware Info":  GetFirmwareInfo(); break;
-            case "Get Channel Info":   GetChannelInfo(); break;
-            case "Start Acquisition":  StartAcquisition(); break;
-            case "Stop Acquisition":   StopAcquisition(); break;
-            case "Read All Config":    ReadAllConfig(); break;
+            case "Get Firmware Info": GetFirmwareInfo(); break;
+            case "Get Channel Info": GetChannelInfo(); break;
+            case "Start Acquisition": StartAcquisition(); break;
+            case "Stop Acquisition": StopAcquisition(); break;
+            case "Read All Config": ReadAllConfig(); break;
         }
     }
 

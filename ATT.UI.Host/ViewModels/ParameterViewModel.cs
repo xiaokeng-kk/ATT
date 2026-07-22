@@ -43,6 +43,9 @@ public partial class ParameterViewModel : ObservableObject
     // ==================== Observable state ====================
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentValueNumeric))]
+    [NotifyPropertyChangedFor(nameof(CurrentValueBool))]
+    [NotifyPropertyChangedFor(nameof(CurrentValueString))]
     private object? _currentValue;
 
     [ObservableProperty]
@@ -56,8 +59,37 @@ public partial class ParameterViewModel : ObservableObject
     /// <summary>Action types render as a Button only</summary>
     public bool IsAction => ParameterType == ParameterType.Action;
 
+    /// <summary>Boolean → CheckBox</summary>
+    public bool IsBoolean => ParameterType == ParameterType.Boolean;
+
+    /// <summary>Integer / Double → NumericUpDown</summary>
+    public bool IsNumeric => ParameterType is ParameterType.Integer or ParameterType.Double;
+
+    /// <summary>String / Enum / fallback → TextBox</summary>
+    public bool IsTextInput => !IsAction && !IsBoolean && !IsNumeric;
+
     /// <summary>Value types render as an input control + Set button</summary>
     public bool IsValueType => !IsAction;
+
+    /// <summary>Numeric value for NumericUpDown binding</summary>
+    public double CurrentValueNumeric
+    {
+        get => CurrentValue is IConvertible c ? Convert.ToDouble(c) : 0;
+        set
+        {
+            if (ParameterType == ParameterType.Integer)
+                CurrentValue = (long)value;
+            else
+                CurrentValue = value;
+        }
+    }
+
+    /// <summary>Boolean value for CheckBox binding</summary>
+    public bool CurrentValueBool
+    {
+        get => CurrentValue is bool b && b;
+        set => CurrentValue = value;
+    }
 
     public string CurrentValueString
     {

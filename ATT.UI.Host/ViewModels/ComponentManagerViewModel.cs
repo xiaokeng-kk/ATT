@@ -34,6 +34,12 @@ public partial class ComponentManagerViewModel : ObservableObject
     private string _selectedCategory = "All";
 
     /// <summary>
+    /// Callback invoked when a config window should be opened for a component.
+    /// View layer sets this to create the actual Window.
+    /// </summary>
+    public Func<ComponentViewModel, bool>? OpenConfigWindow { get; set; }
+
+    /// <summary>
     /// All discovered component ViewModels.
     /// </summary>
     public ObservableCollection<ComponentViewModel> Components { get; } = [];
@@ -145,7 +151,7 @@ public partial class ComponentManagerViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Manually add a pre-configured component.
+    /// Manually add a pre-configured component and auto-open its config window.
     /// </summary>
     public void AddComponent(IConfigurable component)
     {
@@ -154,6 +160,9 @@ public partial class ComponentManagerViewModel : ObservableObject
         RebuildCategoryMenu();
         ApplyFilter();
         SelectedComponent = vm;
+
+        // Auto-open config window (View layer handles the actual Window creation)
+        OpenConfigWindow?.Invoke(vm);
     }
 
     /// <summary>

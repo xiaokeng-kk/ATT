@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ATT.UI.Host.ViewModels"
+        xmlns:views="using:ATT.UI.Host.Views"
+        x:Class="ATT.UI.Host.Views.ComponentConfigWindow"
+        x:DataType="vm:ComponentViewModel"
+        Title="{Binding ComponentName}"
+        Width="480" Height="540"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel>
+    <!-- Header -->
+    <Border DockPanel.Dock="Top" Padding="12,8" Background="#22000000">
+      <StackPanel>
+        <TextBlock Text="{Binding ComponentName}" FontSize="16" FontWeight="Bold" />
+        <TextBlock Text="{Binding ComponentType}" FontSize="12" Foreground="Gray" />
+      </StackPanel>
+    </Border>
+
+    <!-- Parameters -->
+    <views:ComponentConfigView />
+  </DockPanel>
+
+</Window>

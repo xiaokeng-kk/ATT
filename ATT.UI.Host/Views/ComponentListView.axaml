@@ -32,7 +32,8 @@
              SelectedItem="{Binding SelectedComponent}"
              Width="220"
              BorderBrush="#44000000"
-             BorderThickness="0,0,1,0">
+             BorderThickness="0,0,1,0"
+             DoubleTapped="OnComponentDoubleTapped">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:ComponentViewModel">
           <StackPanel Margin="8,4">
