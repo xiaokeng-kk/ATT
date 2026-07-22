@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ATT.UI.Host.ViewModels"
+             x:Class="ATT.UI.Host.Views.DeviceSetupView"
+             x:DataType="vm:DeviceSetupViewModel">
+
+  <DockPanel Margin="8">
+    <!-- ===== Bottom Toolbar ===== -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+      <Button Content="Add Device" Command="{Binding AddDeviceCommand}" />
+      <Button Content="Remove Device" Command="{Binding RemoveDeviceCommand}"
+              CommandParameter="{Binding SelectedItem}" />
+      <Button Content="Generate JSON" Command="{Binding GenerateJsonCommand}" />
+      <Button Content="Export Config" Command="{Binding ExportConfigCommand}" />
+      <Button Content="Launch Devices" Command="{Binding LaunchCliCommand}"
+              IsEnabled="{Binding HasDevices}" />
+      <ProgressBar IsVisible="{Binding IsLaunching}" IsIndeterminate="True" Width="100" />
+      <TextBlock Text="{Binding LaunchStatus}" VerticalAlignment="Center" FontSize="11" Foreground="Gray" />
+    </StackPanel>
+
+    <!-- ===== Main Content ===== -->
+    <Grid ColumnDefinitions="250,*,300">
+      <!-- ===== Left: Device List ===== -->
+      <Border Margin="0,0,8,0" BorderBrush="#22000000" BorderThickness="1" CornerRadius="6">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="Devices" FontWeight="Bold"
+                     Margin="8" FontSize="14" />
+          <ListBox ItemsSource="{Binding DeviceItems}"
+                   SelectedItem="{Binding SelectedItem}"
+                   BorderThickness="0"
+                   Background="Transparent">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:DeviceSetupItemViewModel">
+                <Border Padding="8,6" Margin="2">
+                  <StackPanel>
+                    <TextBlock Text="{Binding DeviceName}" FontWeight="Bold" />
+                    <TextBlock Text="{Binding TypeNames[SelectedTypeIndex], FallbackValue='(select type)'}"
+                               FontSize="11" Foreground="Gray" />
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+
+      <!-- ===== Center: Device Configuration ===== -->
+      <ScrollViewer Grid.Column="1" Margin="0,0,8,0">
+        <StackPanel IsVisible="{Binding HasSelectedItem}"
+                    Spacing="8" Margin="0,0,0,8">
+
+          <!-- Device Type -->
+          <StackPanel>
+            <TextBlock Text="Device Type" FontWeight="Bold" />
+            <ComboBox ItemsSource="{Binding SelectedItem.TypeNames}"
+                      SelectedIndex="{Binding SelectedItem.SelectedTypeIndex}" />
+          </StackPanel>
+
+          <!-- Device Name -->
+          <StackPanel>
+            <TextBlock Text="Device Name" FontWeight="Bold" />
+            <TextBox Text="{Binding SelectedItem.DeviceName, Mode=TwoWay}" Watermark="Enter device name..." />
+          </StackPanel>
+
+          <!-- Transport Type -->
+          <StackPanel>
+            <TextBlock Text="Transport Type" FontWeight="Bold" />
+            <ComboBox SelectedIndex="{Binding SelectedItem.TransportTypeIndex}">
+              <ComboBoxItem>SerialPort</ComboBoxItem>
+              <ComboBoxItem>TCP</ComboBoxItem>
+            </ComboBox>
+          </StackPanel>
+
+          <!-- SerialPort Config -->
+          <StackPanel IsVisible="{Binding SelectedItem.IsSerialPort}" Spacing="4">
+            <TextBlock Text="Port Name" FontWeight="Bold" />
+            <TextBox Text="{Binding SelectedItem.PortName, Mode=TwoWay}" Watermark="e.g. COM1" />
+            <TextBlock Text="Baud Rate" FontWeight="Bold" />
+            <NumericUpDown Value="{Binding SelectedItem.BaudRate}" Minimum="9600" Maximum="3000000" />
+          </StackPanel>
+
+          <!-- TCP Config -->
+          <StackPanel IsVisible="{Binding SelectedItem.IsTcp}" Spacing="4">
+            <TextBlock Text="Host" FontWeight="Bold" />
+            <TextBox Text="{Binding SelectedItem.TcpHost, Mode=TwoWay}" Watermark="e.g. 192.168.1.100" />
+            <TextBlock Text="Port" FontWeight="Bold" />
+            <NumericUpDown Value="{Binding SelectedItem.TcpPort}" Minimum="1" Maximum="65535" />
+          </StackPanel>
+
+          <!-- IConfigurable Parameters -->
+          <ItemsControl ItemsSource="{Binding SelectedItem.Parameters}"
+                        IsVisible="{Binding SelectedItem.HasParameters}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ParameterViewModel">
+                <Border Margin="0,2" Padding="8,4" BorderBrush="#22000000" BorderThickness="0,0,0,1">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12" />
+                    <CheckBox IsVisible="{Binding IsBoolean}"
+                              IsChecked="{Binding CurrentValueBool, Mode=TwoWay}"
+                              Content="{Binding Name}" />
+                    <StackPanel IsVisible="{Binding IsNumeric}" Orientation="Horizontal" Spacing="4">
+                      <NumericUpDown Minimum="{Binding MinValue}" Maximum="{Binding MaxValue}"
+                                     Value="{Binding CurrentValueNumeric}" Width="120" />
+                    </StackPanel>
+                    <StackPanel IsVisible="{Binding IsTextInput}" Orientation="Horizontal" Spacing="4">
+                      <TextBox Text="{Binding CurrentValueString, Mode=TwoWay}" Width="120" Watermark="value" />
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- ===== Right: JSON Preview ===== -->
+      <Border Grid.Column="2" BorderBrush="#22000000" BorderThickness="1" CornerRadius="6">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="JSON Preview" FontWeight="Bold"
+                     Margin="8" FontSize="14" />
+          <ScrollViewer>
+            <TextBlock Text="{Binding JsonPreview}" FontFamily="Consolas" FontSize="11"
+                       Margin="8" TextWrapping="Wrap" />
+          </ScrollViewer>
+        </DockPanel>
+      </Border>
+    </Grid>
+  </DockPanel>
+
+</UserControl>

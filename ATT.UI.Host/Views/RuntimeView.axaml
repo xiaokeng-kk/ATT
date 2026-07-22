@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ATT.UI.Host.ViewModels"
+             x:Class="ATT.UI.Host.Views.RuntimeView"
+             x:DataType="vm:RuntimeViewModel">
+
+  <DockPanel Margin="8">
+    <!-- ===== Top Status Bar ===== -->
+    <Border DockPanel.Dock="Top" Margin="0,0,0,8"
+            Padding="12,8" CornerRadius="6"
+            Background="#11000000">
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <TextBlock Text="{Binding OverallStatus}"
+                   FontSize="14" FontWeight="Bold"
+                   VerticalAlignment="Center" />
+        <TextBlock Text="{Binding HasDevices, StringFormat='Devices: {0}'}"
+                   FontSize="12" Foreground="Gray"
+                   VerticalAlignment="Center" />
+      </StackPanel>
+    </Border>
+
+    <!-- ===== Bottom: Return Button ===== -->
+    <Button DockPanel.Dock="Bottom"
+            Content="&lt; Return to Setup"
+            Command="{Binding ReturnToSetupCommand}"
+            HorizontalAlignment="Left"
+            Margin="0,8,0,0" />
+
+    <!-- ===== Device Cards ===== -->
+    <ScrollViewer>
+      <ItemsControl ItemsSource="{Binding Devices}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:RuntimeDeviceViewModel">
+            <Border BorderBrush="#22000000" BorderThickness="1"
+                    CornerRadius="8" Padding="12"
+                    Margin="4" Width="340"
+                    Background="#08000000">
+              <StackPanel Spacing="8">
+
+                <!-- Device Header -->
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <!-- Status indicator -->
+                  <Ellipse Width="12" Height="12"
+                           Fill="{Binding StatusColor}"
+                           VerticalAlignment="Center" />
+                  <!-- Name + Type -->
+                  <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
+                    <TextBlock Text="{Binding Type}" FontSize="11" Foreground="Gray" />
+                  </StackPanel>
+                  <!-- Status text -->
+                  <TextBlock Grid.Column="2" Text="{Binding StatusText}"
+                             FontSize="11" Foreground="Gray"
+                             VerticalAlignment="Center" />
+                </Grid>
+
+                <!-- Read Value Display -->
+                <Border BorderBrush="#22000000" BorderThickness="1"
+                        CornerRadius="4" Padding="8,6"
+                        Background="#0A000000">
+                  <TextBlock Text="{Binding ReadValueDisplay}"
+                             FontSize="18" FontWeight="Bold"
+                             HorizontalAlignment="Center" />
+                </Border>
+
+                <!-- IDisplayable Controls -->
+                <ItemsControl ItemsSource="{Binding DisplayElements}"
+                              ItemTemplate="{StaticResource UiElementTemplateSelector}"
+                              IsVisible="{Binding HasDisplayElements}" />
+
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+
+</UserControl>

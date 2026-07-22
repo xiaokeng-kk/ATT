@@ -12,7 +12,7 @@ public partial class MainWindow : Window
         var mainVm = new MainWindowViewModel();
         DataContext = mainVm;
 
-        // Wire up auto-open config windows
+        // Wire up auto-open config windows (legacy component manager)
         mainVm.ComponentManager.OpenConfigWindow = vm =>
         {
             var win = new ComponentConfigWindow(vm);

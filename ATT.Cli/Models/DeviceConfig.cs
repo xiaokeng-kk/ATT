@@ -51,6 +51,19 @@ public class DeviceConfig
     [JsonPropertyName("type")]
     public string Type { get; set; } = "";
 
+    /// <summary>
+    /// 传输层配置（显式属性，优先于 ExtensionData["transport"]）
+    /// </summary>
+    [JsonPropertyName("transport")]
+    public TransportConfig? Transport { get; set; }
+
+    /// <summary>
+    /// IConfigurable 参数 — 设备创建后逐项设置
+    /// 例：{ "AI Mode": true, "Channel": 1, "Sample Rate": 1000 }
+    /// </summary>
+    [JsonPropertyName("parameters")]
+    public Dictionary<string, object?>? Parameters { get; set; }
+
     /// <summary>其他属性（按 type 路由到不同的配置类）</summary>
     [JsonExtensionData]
     public Dictionary<string, JsonElement> ExtensionData { get; set; } = [];
@@ -103,6 +116,14 @@ public class TransportConfig
     /// <summary>超时时间（毫秒）</summary>
     [JsonPropertyName("timeoutMs")]
     public int TimeoutMs { get; set; } = 1000;
+
+    /// <summary>TCP 地址（host:port 格式，如 "192.168.1.100:8080"）</summary>
+    [JsonPropertyName("host")]
+    public string? Host { get; set; }
+
+    /// <summary>TCP 端口</summary>
+    [JsonPropertyName("remotePort")]
+    public int? RemotePort { get; set; }
 }
 
 /// <summary>

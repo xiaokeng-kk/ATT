@@ -17,5 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ATT.Core\ATT.Core.csproj" />
     <ProjectReference Include="..\ATT.Protocol\ATT.Protocol.csproj" />
+    <ProjectReference Include="..\ATT.Cli\ATT.Cli.csproj" />
   </ItemGroup>
 </Project>

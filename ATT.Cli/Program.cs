@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ATT.Cli;
 using ATT.Cli.Analyzers;
 using ATT.Cli.Models;
@@ -29,8 +30,28 @@ internal static class Program
             using var deviceService = new DeviceService();
             var devices = deviceService.StartFromConfig(configFile);
 
-            Console.WriteLine($"成功启动 {devices.Count} 个设备，按 Enter 退出...");
-            Console.ReadLine();
+            if (devices.Count == 0)
+            {
+                Console.Error.WriteLine("错误: 未成功启动任何设备");
+                return 1;
+            }
+
+            // 短暂等待设备消息到达，然后输出运行时 JSON 到 stdout
+            // UI 进程通过捕获 stdout 获取运行时状态
+            Thread.Sleep(100);
+
+            var runtime = deviceService.GetRuntimeOutput();
+            var json = JsonSerializer.Serialize(runtime, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = false
+            });
+
+            // 使用特殊标记前缀，使 UI 进程能区分运行时 JSON 和其他日志输出
+            Console.WriteLine();
+            Console.WriteLine("===RUNTIME_JSON===");
+            Console.WriteLine(json);
+            Console.WriteLine("===RUNTIME_JSON_END===");
 
             return 0;
         }
@@ -159,3 +180,4 @@ internal static class Program
             """);
     }
 }
+

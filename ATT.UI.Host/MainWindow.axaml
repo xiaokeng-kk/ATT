@@ -4,11 +4,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:ATT.UI.Host.ViewModels"
         xmlns:views="using:ATT.UI.Host.Views"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
         x:Class="ATT.UI.Host.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="{Binding Title}">
 
-    <views:ComponentListView DataContext="{Binding ComponentManager}" />
+  <Grid>
+    <!-- Mode 1: Device Setup -->
+    <views:DeviceSetupView IsVisible="{Binding IsSetupMode}"
+                           DataContext="{Binding DeviceSetup}" />
+
+    <!-- Mode 2: Runtime Monitoring -->
+    <views:RuntimeView IsVisible="{Binding IsRuntimeMode}"
+                        DataContext="{Binding Runtime}" />
+  </Grid>
 
 </Window>
