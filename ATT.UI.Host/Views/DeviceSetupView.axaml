@@ -79,7 +79,7 @@
                       ToolTip.Tip="Refresh COM ports"
                       Command="{Binding SelectedItem.RefreshPortsCommand}" />
               <ComboBox ItemsSource="{Binding SelectedItem.AvailablePorts}"
-                        SelectedItem="{Binding SelectedItem.PortName, Mode=TwoWay}" />
+                        SelectedItem="{Binding SelectedItem.SelectedPortInfo, Mode=TwoWay}" />
             </DockPanel>
             <TextBlock Text="Baud Rate" FontWeight="Bold" />
             <NumericUpDown Value="{Binding SelectedItem.BaudRate}" Minimum="9600" Maximum="3000000" />

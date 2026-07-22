@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO.Ports;
+using System.Management;
+using System.Text.RegularExpressions;
 using ATT.Cli.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -42,8 +44,11 @@ public partial class DeviceSetupItemViewModel : ObservableObject
     [ObservableProperty]
     private int _tcpPort = 8080;
 
-    /// <summary>Available COM ports on the current PC</summary>
-    public ObservableCollection<string> AvailablePorts { get; } = [];
+    /// <summary>Available COM ports on the current PC, with device descriptions</summary>
+    public ObservableCollection<ComPortInfo> AvailablePorts { get; } = [];
+
+    [ObservableProperty]
+    private ComPortInfo? _selectedPortInfo;
 
     /// <summary>Whether SerialPort transport is selected</summary>
     public bool IsSerialPort => TransportTypeIndex == 0;
@@ -62,20 +67,63 @@ public partial class DeviceSetupItemViewModel : ObservableObject
         RefreshPorts();
     }
 
-    /// <summary>Refresh the list of available COM ports</summary>
+    partial void OnSelectedPortInfoChanged(ComPortInfo? value)
+    {
+        PortName = value?.PortName ?? "";
+    }
+
+    /// <summary>Refresh the list of available COM ports with device descriptions</summary>
     [RelayCommand]
     public void RefreshPorts()
     {
         var currentPort = PortName;
+
+        // Query WMI for device descriptions keyed by port name
+        var descriptions = GetPortDescriptions();
+
         AvailablePorts.Clear();
         foreach (var port in SerialPort.GetPortNames())
         {
-            AvailablePorts.Add(port);
+            var desc = descriptions.TryGetValue(port, out var d) ? d : port;
+            AvailablePorts.Add(new ComPortInfo { PortName = port, Description = desc });
         }
 
         // Restore previous selection if still available, otherwise pick first
-        PortName = AvailablePorts.Contains(currentPort) ? currentPort
-                 : AvailablePorts.FirstOrDefault() ?? "";
+        SelectedPortInfo = AvailablePorts.FirstOrDefault(p => p.PortName == currentPort)
+                        ?? AvailablePorts.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Query WMI Win32_PnPEntity to get friendly device descriptions for COM ports.
+    /// Uses ManagementObjectSearcher which requires System.Management reference.
+    /// Falls back to port name on failure.
+    /// </summary>
+    private static Dictionary<string, string> GetPortDescriptions()
+    {
+        var result = new Dictionary<string, string>();
+        try
+        {
+            using var searcher = new ManagementObjectSearcher(
+                "SELECT Name FROM Win32_PnPEntity WHERE ConfigManagerErrorCode = 0 AND Name LIKE '%(COM%'");
+            foreach (var obj in searcher.Get())
+            {
+                var name = obj["Name"]?.ToString();
+                if (string.IsNullOrEmpty(name)) continue;
+
+                // Parse "Description (COMx)" → description + portName
+                var portMatch = Regex.Match(name, @"(COM\d+)");
+                if (!portMatch.Success) continue;
+
+                var portName = portMatch.Groups[1].Value;
+                var desc = Regex.Replace(name, @"\s*\(COM\d+\)", "").Trim();
+                result[portName] = desc;
+            }
+        }
+        catch
+        {
+            // WMI may be unavailable (e.g. Linux/macOS) — fall back gracefully
+        }
+        return result;
     }
 
     partial void OnSelectedTypeIndexChanged(int value)
