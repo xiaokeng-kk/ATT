@@ -69,10 +69,12 @@ public partial class DeviceSetupViewModel : ObservableObject
 
     /// <summary>
     /// Remove a device entry from the setup list.
+    /// If no item is specified, removes the most recently added device.
     /// </summary>
     [RelayCommand]
     public void RemoveDevice(DeviceSetupItemViewModel? item)
     {
+        item ??= DeviceItems.LastOrDefault();
         if (item == null) return;
         DeviceItems.Remove(item);
         if (SelectedItem == item)

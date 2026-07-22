@@ -1,25 +1,27 @@
-<Window xmlns="https://github.com/avaloniaui"
+<Window x:Class="ATT.UI.Host.MainWindow" xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="using:ATT.UI.Host.ViewModels"
-        xmlns:views="using:ATT.UI.Host.Views"
-        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
-        x:Class="ATT.UI.Host.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Title="{Binding Title}">
+        xmlns:views="using:ATT.UI.Host.Views" xmlns:vm="using:ATT.UI.Host.ViewModels"
+        Title="{Binding Title}"
+        d:DesignHeight="700" d:DesignWidth="1200"
+        x:DataType="vm:MainWindowViewModel" mc:Ignorable="d">
 
-  <Grid>
-    <!--
-      Mode-based view switching.
-      Only ONE view is visible at a time — the other is collapsed (no layout space).
-      IsVisible = false in Avalonia means Visibility.Collapsed.
-    -->
-    <views:DeviceSetupView IsVisible="{Binding IsSetupMode}"
-                           DataContext="{Binding DeviceSetup}" />
+    <Grid>
+        <!--
+            Mode-based view switching.
+            Only ONE view is visible at a time — the other is collapsed (no layout space).
+            IsVisible = false in Avalonia means Visibility.Collapsed.
+            IMPORTANT: IsVisible binds to the Window's DataContext (MainWindowViewModel)
+            via RelativeSource, because each child view overrides its own DataContext
+            with a sub-ViewModel (DeviceSetup / Runtime) that does NOT have
+            IsSetupMode/IsRuntimeMode properties.
+        -->
+        <views:DeviceSetupView DataContext="{Binding DeviceSetup}"
+							   IsVisible="{Binding $parent[Window].DataContext.IsSetupMode}" />
 
-    <views:RuntimeView IsVisible="{Binding IsRuntimeMode}"
-                        DataContext="{Binding Runtime}" />
-  </Grid>
+        <views:RuntimeView DataContext="{Binding Runtime}"
+						   IsVisible="{Binding $parent[Window].DataContext.IsRuntimeMode}" />
+    </Grid>
 
 </Window>

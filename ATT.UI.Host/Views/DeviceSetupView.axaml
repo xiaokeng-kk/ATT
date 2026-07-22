@@ -74,7 +74,13 @@
           <!-- SerialPort Config -->
           <StackPanel IsVisible="{Binding SelectedItem.IsSerialPort}" Spacing="4">
             <TextBlock Text="Port Name" FontWeight="Bold" />
-            <TextBox Text="{Binding SelectedItem.PortName, Mode=TwoWay}" Watermark="e.g. COM1" />
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="↻" Width="28" Height="28"
+                      ToolTip.Tip="Refresh COM ports"
+                      Command="{Binding SelectedItem.RefreshPortsCommand}" />
+              <ComboBox ItemsSource="{Binding SelectedItem.AvailablePorts}"
+                        SelectedItem="{Binding SelectedItem.PortName, Mode=TwoWay}" />
+            </DockPanel>
             <TextBlock Text="Baud Rate" FontWeight="Bold" />
             <NumericUpDown Value="{Binding SelectedItem.BaudRate}" Minimum="9600" Maximum="3000000" />
           </StackPanel>
@@ -87,29 +93,6 @@
             <NumericUpDown Value="{Binding SelectedItem.TcpPort}" Minimum="1" Maximum="65535" />
           </StackPanel>
 
-          <!-- IConfigurable Parameters -->
-          <ItemsControl ItemsSource="{Binding SelectedItem.Parameters}"
-                        IsVisible="{Binding SelectedItem.HasParameters}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:ParameterViewModel">
-                <Border Margin="0,2" Padding="8,4" BorderBrush="#22000000" BorderThickness="0,0,0,1">
-                  <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12" />
-                    <CheckBox IsVisible="{Binding IsBoolean}"
-                              IsChecked="{Binding CurrentValueBool, Mode=TwoWay}"
-                              Content="{Binding Name}" />
-                    <StackPanel IsVisible="{Binding IsNumeric}" Orientation="Horizontal" Spacing="4">
-                      <NumericUpDown Minimum="{Binding MinValue}" Maximum="{Binding MaxValue}"
-                                     Value="{Binding CurrentValueNumeric}" Width="120" />
-                    </StackPanel>
-                    <StackPanel IsVisible="{Binding IsTextInput}" Orientation="Horizontal" Spacing="4">
-                      <TextBox Text="{Binding CurrentValueString, Mode=TwoWay}" Width="120" Watermark="value" />
-                    </StackPanel>
-                  </StackPanel>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
         </StackPanel>
       </ScrollViewer>
 
