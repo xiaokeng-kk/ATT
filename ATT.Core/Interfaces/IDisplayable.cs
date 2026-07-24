@@ -5,16 +5,15 @@ namespace ATT.Core.Interfaces;
 /// <summary>
 /// Displayable component interface.
 /// Components implement this to declare what UI elements (buttons, displays,
-/// charts, etc.) they want the frontend to render. The description can come
-/// from an embedded JSON resource or be generated at runtime.
+/// charts, etc.) they want the frontend to render.
+/// Each component generates its UI description at runtime via GetDisplayJson().
 /// </summary>
 public interface IDisplayable : IComponent
 {
     /// <summary>
     /// Returns a JSON string describing the UI elements for the frontend.
-    /// Default implementation (in Sensor base class) reads from embedded
-    /// resource file "{FullTypeName}.ui.json".
-    /// Override to generate dynamically at runtime.
+    /// Components override this to dynamically generate UI descriptions
+    /// based on their current state and parameters.
     /// </summary>
     string GetDisplayJson();
 

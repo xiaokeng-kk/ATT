@@ -1,84 +1,154 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ATT.UI.Host.ViewModels"
-             x:Class="ATT.UI.Host.Views.RuntimeView"
-             x:DataType="vm:RuntimeViewModel">
+           xmlns:views="using:ATT.UI.Host.Views"
+           x:Class="ATT.UI.Host.Views.RuntimeView"
+           x:DataType="vm:RuntimeViewModel">
 
-  <DockPanel Margin="8">
-    <!-- ===== Top Status Bar ===== -->
-    <Border DockPanel.Dock="Top" Margin="0,0,0,8"
-            Padding="12,8" CornerRadius="6"
-            Background="#11000000">
-      <StackPanel Orientation="Horizontal" Spacing="16">
-        <TextBlock Text="{Binding OverallStatus}"
-                   FontSize="14" FontWeight="Bold"
-                   VerticalAlignment="Center" />
-        <TextBlock Text="{Binding HasDevices, StringFormat='Devices: {0}'}"
-                   FontSize="12" Foreground="Gray"
-                   VerticalAlignment="Center" />
-      </StackPanel>
-    </Border>
+<UserControl.Resources>
+  <!--
+    Interactive parameter control templates for ParameterViewModel.
+    Auto-selected by ParameterTemplateSelector based on ParameterType.
+  -->
+  <DataTemplate x:Key="ParameterActionTemplate"
+                x:DataType="vm:ParameterViewModel">
+    <Button Content="{Binding Name}"
+            Command="{Binding InvokeCommand}"
+            HorizontalAlignment="Stretch"
+            Margin="0,2" />
+  </DataTemplate>
 
-    <!-- ===== Bottom: Return Button ===== -->
-    <Button DockPanel.Dock="Bottom"
-            Content="&lt; Return to Setup"
-            Command="{Binding ReturnToSetupCommand}"
-            HorizontalAlignment="Left"
-            Margin="0,8,0,0" />
+  <DataTemplate x:Key="ParameterNumericTemplate"
+                x:DataType="vm:ParameterViewModel">
+    <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+      <TextBox Text="{Binding CurrentValueString}"
+               Watermark="{Binding Description}"
+               AcceptsReturn="False" />
+      <Button Grid.Column="1"
+              Content="Set"
+              Command="{Binding SetCommand}"
+              Margin="4,0,0,0"
+              MinWidth="48" />
+    </Grid>
+  </DataTemplate>
 
-    <!-- ===== Device Cards ===== -->
-    <ScrollViewer>
-      <ItemsControl ItemsSource="{Binding Devices}">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <WrapPanel />
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:RuntimeDeviceViewModel">
-            <Border BorderBrush="#22000000" BorderThickness="1"
-                    CornerRadius="8" Padding="12"
-                    Margin="4" Width="340"
-                    Background="#08000000">
-              <StackPanel Spacing="8">
+  <DataTemplate x:Key="ParameterBooleanTemplate"
+                x:DataType="vm:ParameterViewModel">
+    <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+      <TextBlock Text="{Binding Name}"
+                 VerticalAlignment="Center"
+                 FontSize="11" />
+      <ToggleSwitch Grid.Column="1"
+                    IsChecked="{Binding CurrentValueBool}"
+                    Command="{Binding SetCommand}" />
+    </Grid>
+  </DataTemplate>
 
-                <!-- Device Header -->
-                <Grid ColumnDefinitions="Auto,*,Auto">
-                  <!-- Status indicator -->
-                  <Ellipse Width="12" Height="12"
-                           Fill="{Binding StatusColor}"
+  <DataTemplate x:Key="ParameterTextTemplate"
+                x:DataType="vm:ParameterViewModel">
+    <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+      <TextBox Text="{Binding CurrentValueString}"
+               Watermark="{Binding Description}"
+               AcceptsReturn="False" />
+      <Button Grid.Column="1"
+              Content="Send"
+              Command="{Binding SetCommand}"
+              Margin="4,0,0,0"
+              MinWidth="48" />
+    </Grid>
+  </DataTemplate>
+
+  <!-- ParameterTemplateSelector: switches template based on ParameterType -->
+  <views:ParameterTemplateSelector x:Key="ParameterTemplateSelector"
+                                   ActionTemplate="{StaticResource ParameterActionTemplate}"
+                                   NumericTemplate="{StaticResource ParameterNumericTemplate}"
+                                   BooleanTemplate="{StaticResource ParameterBooleanTemplate}"
+                                   TextTemplate="{StaticResource ParameterTextTemplate}" />
+</UserControl.Resources>
+
+<DockPanel Margin="8">
+  <!-- ===== Top Status Bar ===== -->
+  <Border DockPanel.Dock="Top" Margin="0,0,0,8"
+          Padding="12,8" CornerRadius="6"
+          Background="#11000000">
+    <StackPanel Orientation="Horizontal" Spacing="16">
+      <TextBlock Text="{Binding OverallStatus}"
+                 FontSize="14" FontWeight="Bold"
+                 VerticalAlignment="Center" />
+      <TextBlock Text="{Binding HasDevices, StringFormat='Devices: {0}'}"
+                 FontSize="12" Foreground="Gray"
+                 VerticalAlignment="Center" />
+    </StackPanel>
+  </Border>
+
+  <!-- ===== Bottom: Return Button ===== -->
+  <Button DockPanel.Dock="Bottom"
+          Content="&lt; Return to Setup"
+          Command="{Binding ReturnToSetupCommand}"
+          HorizontalAlignment="Left"
+          Margin="0,8,0,0" />
+
+  <!-- ===== Device Cards ===== -->
+  <ScrollViewer>
+    <ItemsControl ItemsSource="{Binding Devices}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <WrapPanel />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:RuntimeDeviceViewModel">
+          <Border BorderBrush="#22000000" BorderThickness="1"
+                  CornerRadius="8" Padding="12"
+                  Margin="4" Width="380"
+                  Background="#08000000">
+            <StackPanel Spacing="8">
+
+              <!-- Device Header -->
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Status indicator -->
+                <Ellipse Width="12" Height="12"
+                         Fill="{Binding StatusColor}"
+                         VerticalAlignment="Center" />
+                <!-- Name + Type -->
+                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                  <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
+                  <TextBlock Text="{Binding Type}" FontSize="11" Foreground="Gray" />
+                </StackPanel>
+                <!-- Status text -->
+                <TextBlock Grid.Column="2" Text="{Binding StatusText}"
+                           FontSize="11" Foreground="Gray"
                            VerticalAlignment="Center" />
-                  <!-- Name + Type -->
-                  <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
-                    <TextBlock Text="{Binding Type}" FontSize="11" Foreground="Gray" />
-                  </StackPanel>
-                  <!-- Status text -->
-                  <TextBlock Grid.Column="2" Text="{Binding StatusText}"
-                             FontSize="11" Foreground="Gray"
-                             VerticalAlignment="Center" />
-                </Grid>
+              </Grid>
 
-                <!-- Read Value Display -->
-                <Border BorderBrush="#22000000" BorderThickness="1"
-                        CornerRadius="4" Padding="8,6"
-                        Background="#0A000000">
-                  <TextBlock Text="{Binding ReadValueDisplay}"
-                             FontSize="18" FontWeight="Bold"
-                             HorizontalAlignment="Center" />
-                </Border>
+              <!-- Read Value Display -->
+              <Border BorderBrush="#22000000" BorderThickness="1"
+                      CornerRadius="4" Padding="8,6"
+                      Background="#0A000000">
+                <TextBlock Text="{Binding ReadValueDisplay}"
+                           FontSize="18" FontWeight="Bold"
+                           HorizontalAlignment="Center" />
+              </Border>
 
-                <!-- IDisplayable Controls -->
-                <ItemsControl ItemsSource="{Binding DisplayElements}"
-                              ItemTemplate="{StaticResource UiElementTemplateSelector}"
-                              IsVisible="{Binding HasDisplayElements}" />
+              <!-- IDisplayable Controls (from GetDisplayJson) -->
+              <ItemsControl ItemsSource="{Binding DisplayElements}"
+                            ItemTemplate="{StaticResource UiElementTemplateSelector}"
+                            IsVisible="{Binding HasDisplayElements}" />
 
+                <!-- IConfigurable Parameters (interactive controls) -->
+              <StackPanel IsVisible="{Binding HasParameters}" Spacing="2">
+                <TextBlock Text="Parameters" FontWeight="Bold" FontSize="12"
+                           Foreground="Gray" Margin="0,4,0,2" />
+                <ItemsControl ItemsSource="{Binding Parameters}"
+                              ItemTemplate="{StaticResource ParameterTemplateSelector}" />
               </StackPanel>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </ScrollViewer>
-  </DockPanel>
+
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </ScrollViewer>
+</DockPanel>
 
 </UserControl>

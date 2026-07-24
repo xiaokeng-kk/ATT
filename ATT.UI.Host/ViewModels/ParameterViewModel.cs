@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using ATT.Cli.Models;
 using ATT.Core.Models;
 using ATT.Core.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -7,13 +8,20 @@ using CommunityToolkit.Mvvm.Input;
 namespace ATT.UI.Host.ViewModels;
 
 /// <summary>
-/// ViewModel wrapping a single ConfigurationParameter.
+/// ViewModel wrapping a single ConfigurationParameter or RuntimeParameter.
 /// Provides observable properties and commands for the UI to bind to.
+/// When wrapping RuntimeParameter (from CLI subprocess), commands are no-ops
+/// since there is no live device reference. For in-process use,
+/// wrap ConfigurationParameter + IConfigurable to enable real commands.
 /// </summary>
 public partial class ParameterViewModel : ObservableObject
 {
-    private readonly IConfigurable _component;
+    private readonly IConfigurable? _component;
 
+    /// <summary>
+    /// In-process constructor: wraps a live IConfigurable + ConfigurationParameter.
+    /// Commands will invoke SetParameter/InvokeAction on the actual device.
+    /// </summary>
     public ParameterViewModel(IConfigurable component, ConfigurationParameter parameter)
     {
         _component = component;
@@ -27,6 +35,32 @@ public partial class ParameterViewModel : ObservableObject
         Order = parameter.Order;
 
         _currentValue = parameter.CurrentValue ?? parameter.DefaultValue;
+    }
+
+    /// <summary>
+    /// Subprocess constructor: wraps a RuntimeParameter (CLI JSON snapshot).
+    /// Commands are no-ops since there is no live device reference.
+    /// Use when UI receives device state via ATT.Cli subprocess output.
+    /// </summary>
+    public ParameterViewModel(RuntimeParameter parameter)
+    {
+        _component = null;
+        Name = parameter.Name;
+        Description = parameter.Description;
+        Groups = []; // RuntimeParameter has no group info
+        ParameterType = parameter.ParameterType switch
+        {
+            "Action" => ParameterType.Action,
+            "Integer" => ParameterType.Integer,
+            "Double" => ParameterType.Double,
+            "Boolean" => ParameterType.Boolean,
+            "String" => ParameterType.String,
+            "Enum" => ParameterType.Enum,
+            _ => ParameterType.String
+        };
+        MinValue = parameter.MinValue;
+        MaxValue = parameter.MaxValue;
+        _currentValue = parameter.CurrentValue;
     }
 
     // ==================== Read-only metadata ====================
@@ -102,6 +136,7 @@ public partial class ParameterViewModel : ObservableObject
     /// <summary>For Action type: invoked on button click</summary>
     public ICommand InvokeCommand => new RelayCommand(() =>
     {
+        if (_component == null) return; // No-op in subprocess mode
         try
         {
             IsBusy = true;
@@ -121,6 +156,7 @@ public partial class ParameterViewModel : ObservableObject
     /// <summary>For value types: apply the current input value</summary>
     public ICommand SetCommand => new RelayCommand(() =>
     {
+        if (_component == null) return; // No-op in subprocess mode
         try
         {
             IsBusy = true;

@@ -1,6 +1,7 @@
 using ATT.Core;
 using ATT.Protocol.Sensors;
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.IO;
 
 namespace ATT.UI.Host.ViewModels;
 
@@ -53,6 +54,33 @@ public partial class MainWindowViewModel : ObservableObject
 
         // Wire up: when user clicks return to setup
         Runtime.ReturnToSetupRequested += OnReturnToSetupRequested;
+
+        // Auto-load config from working directory or ~/.ATT/
+        AutoLoadConfig();
+    }
+
+    /// <summary>
+    /// Scan working directory and ~/.ATT/ for config JSON files.
+    /// If found, load devices into the setup view.
+    /// </summary>
+    private void AutoLoadConfig()
+    {
+        var searchPaths = new[]
+        {
+            Environment.CurrentDirectory,
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".ATT")
+        };
+
+        foreach (var dir in searchPaths)
+        {
+            if (!Directory.Exists(dir)) continue;
+            foreach (var file in Directory.GetFiles(dir, "*.json"))
+            {
+                DeviceSetup.LoadFromConfigFile(file);
+                if (DeviceSetup.HasDevices) break;
+            }
+            if (DeviceSetup.HasDevices) break;
+        }
     }
 
     // ==================== Mode Switching ====================

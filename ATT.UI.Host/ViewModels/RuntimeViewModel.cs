@@ -52,6 +52,7 @@ public partial class RuntimeViewModel : ObservableObject
                     ReadValue = rd.ReadValue,
                 };
                 vm.ParseDisplayJson(rd.DisplayJson);
+                vm.ParseParameters(rd.Parameters);
                 Devices.Add(vm);
             }
         }

@@ -85,6 +85,69 @@ public partial class DeviceSetupViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Load device configurations from a JSON config file and populate the setup list.
+    /// Looks up device types by name in AvailableTypes.
+    /// </summary>
+    public void LoadFromConfigFile(string configPath)
+    {
+        try
+        {
+            var json = File.ReadAllText(configPath);
+            var configFile = JsonSerializer.Deserialize<DeviceConfigFile>(json);
+            if (configFile?.Devices == null || configFile.Devices.Count == 0) return;
+
+            foreach (var deviceCfg in configFile.Devices)
+            {
+                // Find matching type by name
+                var typeIndex = -1;
+                for (int i = 0; i < AvailableTypes.Count; i++)
+                {
+                    if (AvailableTypes[i].Name == deviceCfg.Type)
+                    {
+                        typeIndex = i;
+                        break;
+                    }
+                }
+                if (typeIndex < 0) continue;
+
+                var item = new DeviceSetupItemViewModel(AvailableTypes);
+                item.SelectedTypeIndex = typeIndex;
+                item.DeviceName = deviceCfg.Name;
+
+                if (deviceCfg.Transport != null)
+                {
+                    var t = deviceCfg.Transport;
+                    item.TransportTypeIndex = t.Type == "Tcp" ? 1 : 0;
+                    if (!string.IsNullOrEmpty(t.PortName))
+                    {
+                        // Try to match a COM port, otherwise set PortName directly
+                        var matched = item.AvailablePorts
+                            .FirstOrDefault(p => p.PortName == t.PortName);
+                        if (matched != null)
+                            item.SelectedPortInfo = matched;
+                        else
+                            item.PortName = t.PortName;
+                    }
+                    item.BaudRate = t.BaudRate > 0 ? t.BaudRate : 1500000;
+                    item.TcpHost = t.Host ?? "127.0.0.1";
+                    item.TcpPort = t.RemotePort ?? 8080;
+                }
+
+                DeviceItems.Add(item);
+            }
+
+            SelectedItem = DeviceItems.FirstOrDefault();
+            OnPropertyChanged(nameof(HasDevices));
+            OnPropertyChanged(nameof(HasSelectedItem));
+            RefreshJsonPreview();
+        }
+        catch (Exception ex)
+        {
+            LaunchStatus = $"加载配置失败: {ex.Message}";
+        }
+    }
+
+    /// <summary>
     /// Generate JSON string from the current device configurations.
     /// </summary>
     [RelayCommand]
@@ -260,7 +323,7 @@ public partial class DeviceSetupViewModel : ObservableObject
         var uiDir = AppContext.BaseDirectory;
         // Navigate up from bin/Debug/net9.0 to solution root
         var dir = new DirectoryInfo(uiDir);
-        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "PacketAnalyzer.sln")))
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "ATT.sln")))
             dir = dir.Parent;
 
         if (dir != null)

@@ -353,6 +353,21 @@ public class DeviceService : IDisposable
                 rd.DisplayJson = displayable.GetDisplayJson();
             }
 
+            // IConfigurable — 获取参数快照
+            if (device is IConfigurable configurable)
+            {
+                rd.Parameters = configurable.Parameters.Select(p => new RuntimeParameter
+                {
+                    Name = p.Name,
+                    Description = p.Description,
+                    ParameterType = p.ParameterType.ToString(),
+                    CurrentValue = p.CurrentValue ?? p.DefaultValue,
+                    MinValue = p.MinValue,
+                    MaxValue = p.MaxValue,
+                    EnumOptions = p.EnumOptions?.Select(e => $"{e.Name}={e.Value}").ToArray(),
+                }).ToList();
+            }
+
             runtimeDevices.Add(rd);
         }
 

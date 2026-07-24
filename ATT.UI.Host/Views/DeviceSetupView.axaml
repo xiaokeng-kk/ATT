@@ -82,7 +82,7 @@
                         SelectedItem="{Binding SelectedItem.SelectedPortInfo, Mode=TwoWay}" />
             </DockPanel>
             <TextBlock Text="Baud Rate" FontWeight="Bold" />
-            <NumericUpDown Value="{Binding SelectedItem.BaudRate}" Minimum="9600" Maximum="3000000" />
+            <NumericUpDown Value="{Binding SelectedItem.BaudRate}" Minimum="9600" Maximum="10000000" />
           </StackPanel>
 
           <!-- TCP Config -->

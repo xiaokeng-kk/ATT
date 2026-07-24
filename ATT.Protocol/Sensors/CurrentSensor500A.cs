@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ATT.Core.Attributes;
 using ATT.Core.Base;
 using ATT.Core.Interfaces;
@@ -75,26 +76,22 @@ public class CurrentSensor500A : Sensor, IConfigurable, IDisplayable
     public IReadOnlyList<ConfigurationParameter> Parameters { get; } =
     [
         // --- Actions ---
-        new() { Name = "Get Firmware Info",      Description = "Query firmware version from the device",   ParameterType = ParameterType.Action },
-        new() { Name = "Get Channel Info",        Description = "Query channel configuration from device", ParameterType = ParameterType.Action },
-        new() { Name = "Start Acquisition",       Description = "Begin continuous current sampling",        ParameterType = ParameterType.Action },
-        new() { Name = "Stop Acquisition",        Description = "Stop continuous current sampling",         ParameterType = ParameterType.Action },
-        new() { Name = "Read All Config",         Description = "Read all configuration items from device",ParameterType = ParameterType.Action },
+        new() { Name = "Get Firmware Info",  Description = "Query firmware version from the device",   ParameterType = ParameterType.Action },
+        new() { Name = "Get Channel Info",   Description = "Query channel configuration from device",  ParameterType = ParameterType.Action },
+        new() { Name = "Start Acquisition",  Description = "Begin continuous current sampling",        ParameterType = ParameterType.Action },
+        new() { Name = "Stop Acquisition",   Description = "Stop continuous current sampling",         ParameterType = ParameterType.Action },
+        new() { Name = "Read All Config",    Description = "Read all configuration items from device", ParameterType = ParameterType.Action },
 
         // --- Values ---
-        new() { Name = "AI Mode",                 Description = "Enable AI arc detection mode (vs data collection mode)", ParameterType = ParameterType.Boolean, DefaultValue = false },
-        new() { Name = "Channel",                 Description = "Sensor channel number",                   ParameterType = ParameterType.Integer,  DefaultValue = 0, MinValue = 0, MaxValue = 255 },
-        new() { Name = "Sample Points",           Description = "Number of sampling points (multiple of 1024)", ParameterType = ParameterType.Integer, DefaultValue = 1024, MinValue = 1024, MaxValue = 65535 },
-        new() { Name = "Sample Rate",             Description = "Sampling rate in Hz",                     ParameterType = ParameterType.Integer, DefaultValue = 1000, MinValue = 1, MaxValue = 100000 },
-        new() { Name = "Sample Mode",             Description = "Enable arc tag in waveform data",         ParameterType = ParameterType.Boolean, DefaultValue = false },
+        new() { Name = "Sample Points",      Description = "Number of sampling points (multiple of 1024)",           ParameterType = ParameterType.Integer, DefaultValue = 1024, MinValue = 1024, MaxValue = 65535 },
+        new() { Name = "Sample Rate",        Description = "Sampling rate in Hz",                                    ParameterType = ParameterType.Integer, DefaultValue = 1000, MinValue = 1,    MaxValue = 100000 },
+        new() { Name = "Sample Mode",        Description = "Enable arc tag in waveform data",                        ParameterType = ParameterType.Boolean, DefaultValue = false },
     ];
 
     public void SetParameter(string name, object? value)
     {
         switch (name)
         {
-            case "AI Mode": SetProcessMode(value is true, Channel); break;
-            case "Channel": _channel = Convert.ToByte(value ?? 0); SetProcessMode(_aiMode, _channel); break;
             case "Sample Points": SetSamplePoints(Convert.ToUInt32(value ?? 1024)); break;
             case "Sample Rate": SetSampleRate(Convert.ToUInt32(value ?? 1000)); break;
             case "Sample Mode": SetSampleMode(value is true); break;
@@ -105,8 +102,6 @@ public class CurrentSensor500A : Sensor, IConfigurable, IDisplayable
     {
         return name switch
         {
-            "AI Mode" => _aiMode,
-            "Channel" => Channel,
             "Sample Points" => (object)_samplePoints,
             "Sample Rate" => (object)_sampleRate,
             "Sample Mode" => _sampleWithArcTag,
@@ -290,6 +285,121 @@ public class CurrentSensor500A : Sensor, IConfigurable, IDisplayable
                 ProcessFrame(tmpBuf, frameLen);
             }
         }
+    }
+
+    // ==================== IDisplayable ====================
+
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true,
+    };
+
+    /// <summary>
+    /// 动态生成 UI 控件描述 JSON。
+    /// 基于 Parameters 定义 + 内置控件（波形图表、电弧状态），
+    /// 自动构建 Button / InputButton / Toggle / Display / Chart 元素。
+    /// </summary>
+    public override string GetDisplayJson()
+    {
+        var elements = new List<object>
+        {
+            // --- 状态显示组 ---
+            new
+            {
+                id = "read-value",
+                type = "Display",
+                label = "Current",
+                description = "实时电流测量值",
+                bind = "ReadValue",
+                unit = "A",
+                order = 0.0
+            },
+            new
+            {
+                id = "arc-status",
+                type = "Display",
+                label = "Arc Detected",
+                description = "电弧检测状态",
+                bind = "ArcDetected",
+                order = 1.0
+            },
+            new
+            {
+                id = "waveform-chart",
+                type = "Chart",
+                label = "Current Waveform",
+                description = "电流波形图",
+                bind = "CurrentWaveform",
+                order = 2.0,
+                properties = new Dictionary<string, object>
+                {
+                    ["chartType"] = "line",
+                    ["maxPoints"] = 1024
+                }
+            },
+        };
+
+        // 从 Parameters 生成交互控件
+        double baseOrder = 10.0;
+        foreach (var p in Parameters)
+        {
+            object elem = p.ParameterType switch
+            {
+                ParameterType.Action => (object)new
+                {
+                    id = $"action-{p.Name.ToLowerInvariant().Replace(' ', '-')}",
+                    type = "Button",
+                    label = p.Name,
+                    description = p.Description,
+                    action = p.Name,
+                    order = baseOrder
+                },
+                ParameterType.Integer or ParameterType.Double => (object)new
+                {
+                    id = $"input-{p.Name.ToLowerInvariant().Replace(' ', '-')}",
+                    type = "InputButton",
+                    label = p.Name,
+                    description = p.Description,
+                    action = p.Name,
+                    order = baseOrder,
+                    properties = new Dictionary<string, object>
+                    {
+                        ["inputType"] = "number",
+                        ["inputPlaceholder"] = p.DefaultValue?.ToString() ?? "",
+                        ["buttonLabel"] = "Set",
+                        ["minValue"] = p.MinValue ?? 0.0,
+                        ["maxValue"] = p.MaxValue ?? 0.0
+                    }
+                },
+                ParameterType.Boolean => (object)new
+                {
+                    id = $"toggle-{p.Name.ToLowerInvariant().Replace(' ', '-')}",
+                    type = "Toggle",
+                    label = p.Name,
+                    description = p.Description,
+                    action = "Set " + p.Name,
+                    actionOff = "Reset " + p.Name,
+                    order = baseOrder
+                },
+                _ => (object)new
+                {
+                    id = $"input-{p.Name.ToLowerInvariant().Replace(' ', '-')}",
+                    type = "InputButton",
+                    label = p.Name,
+                    description = p.Description,
+                    action = p.Name,
+                    order = baseOrder
+                }
+            };
+            elements.Add(elem);
+            baseOrder += 1.0;
+        }
+
+        var json = JsonSerializer.Serialize(
+            new { elements },
+            _jsonOptions);
+        return json;
     }
 
     // ==================== 帧处理 ====================

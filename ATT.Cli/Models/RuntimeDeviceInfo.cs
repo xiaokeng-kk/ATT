@@ -41,4 +41,39 @@ public class RuntimeDevice
     /// </summary>
     [JsonPropertyName("displayJson")]
     public string? DisplayJson { get; set; }
+
+    /// <summary>
+    /// IConfigurable parameters snapshot — name + type + current value + constraints.
+    /// Populated for devices implementing IConfigurable.
+    /// </summary>
+    [JsonPropertyName("parameters")]
+    public List<RuntimeParameter>? Parameters { get; set; }
+}
+
+/// <summary>
+/// A single configurable parameter snapshot for runtime display.
+/// Read-only metadata sent from CLI to UI.
+/// </summary>
+public class RuntimeParameter
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = "";
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = "";
+
+    [JsonPropertyName("parameterType")]
+    public string ParameterType { get; set; } = "String";
+
+    [JsonPropertyName("currentValue")]
+    public object? CurrentValue { get; set; }
+
+    [JsonPropertyName("minValue")]
+    public double? MinValue { get; set; }
+
+    [JsonPropertyName("maxValue")]
+    public double? MaxValue { get; set; }
+
+    [JsonPropertyName("enumOptions")]
+    public string[]? EnumOptions { get; set; }
 }

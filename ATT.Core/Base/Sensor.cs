@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using ATT.Core.Interfaces;
 using ATT.Core.Models;
@@ -175,21 +174,11 @@ public abstract class Sensor : Instrument, ISensor, IDisplayable, IDisposable
 
     /// <summary>
     /// 返回 JSON 格式的 UI 控件描述。
-    /// 默认从嵌入式资源 "{FullTypeName}.ui.json" 读取。
-    /// 子类可重写以运行时动态生成 JSON。
+    /// 基类默认返回空（无 UI 元素），子类应重写以运行时动态生成 JSON。
     /// </summary>
     public virtual string GetDisplayJson()
     {
-        var type = GetType();
-        var resourceName = $"{type.FullName}.ui.json";
-        var assembly = type.GetTypeInfo().Assembly;
-
-        using var stream = assembly.GetManifestResourceStream(resourceName);
-        if (stream == null)
-            return """{"elements":[]}""";
-
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
+        return """{"elements":[]}""";
     }
 
     /// <summary>
